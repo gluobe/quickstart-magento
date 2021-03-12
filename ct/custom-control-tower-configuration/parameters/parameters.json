@@ -1,0 +1,65 @@
+[
+    {
+        "ParameterKey": "AvailabilityZones",
+        "ParameterValue": [
+            "us-east-1a",
+            "us-east-1b"
+          ]
+    },
+    {
+        "ParameterKey": "KeyPairName",
+        "ParameterValue": "aws-qs-tc-all"
+    },
+    {
+        "ParameterKey": "AccessCIDR",
+        "ParameterValue": "10.0.0.0/16"
+      },
+      {
+        "ParameterKey": "RemoteAccessCIDR",
+        "ParameterValue": "10.0.0.0/16"
+      },
+      {
+        "ParameterKey": "MagentoReleaseMedia",
+        "ParameterValue": "https://ct-work1-ci-media.s3.amazonaws.com/Magento-CE-2.3.2_sample_data-2019-06-13-04-34-43.tar.gz"
+      },
+      {
+        "ParameterKey": "MagentoVersion",
+        "ParameterValue": "2.3"
+      },
+      {
+        "ParameterKey": "NotificationEmail",
+        "ParameterValue": "foo@example.com"
+      },
+      {
+        "ParameterKey": "DBMasterUserPassword",
+        "ParameterValue": "Passw0rd1!"
+      },
+      {
+        "ParameterKey": "AdminFirstName",
+        "ParameterValue": "Foo"
+      },
+      {
+        "ParameterKey": "AdminLastName",
+        "ParameterValue": "Bar"
+      },
+      {
+        "ParameterKey": "AdminEmail",
+        "ParameterValue": "foo@example.com"
+      },
+      {
+        "ParameterKey": "AdminUserName",
+        "ParameterValue": "admin"
+      },
+      {
+        "ParameterKey": "AdminPassword",
+        "ParameterValue": "aUA*dKTsLHuNY6wygJ3z7DFUU8saUZuG"
+      },
+      {
+        "ParameterKey": "QSS3BucketName",
+        "ParameterValue": "aws-quickstart"
+      },
+      {
+        "ParameterKey": "QSS3KeyPrefix",
+        "ParameterValue": "quickstart-magento/"
+      }
+]
