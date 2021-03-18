@@ -1,11 +1,43 @@
+---
 region: us-east-1
-version: 2020-01-01
-cloudformation_resources:
+version: 2021-03-15
+resources:
   - name: qs-magento-1
-    template_file: s3://aws-quickstart/quickstart-magento/templates/magento-master.template
-    parameter_file: parameters/parameters.json
+    resource_file: s3://aws-quickstart/quickstart-magento/templates/magento-master.template
+    parameters:
+      - parameter_key: AvailabilityZones
+        parameter_value: us-east-1a, us-east-1b
+      - parameter_key: KeyPairName
+        parameter_value: aws-qs-tc-all
+      - parameter_key: AccessCIDR
+        parameter_value: 10.0.0.0/16
+      - parameter_key: RemoteAccessCIDR
+        parameter_value: 10.0.0.0/16
+      - parameter_key: MagentoReleaseMedia
+        parameter_value: s3://ct-work1-ci-media/Magento-CE-2.3.2_sample_data-2019-06-13-04-34-43.tar.gz
+      - parameter_key: MagentoVersion
+        parameter_value: '2.3'
+      - parameter_key: NotificationEmail
+        parameter_value: foo@example.com
+      - parameter_key: DBMasterUserPassword
+        parameter_value: Passw0rd1!
+      - parameter_key: AdminFirstName
+        parameter_value: Foo
+      - parameter_key: AdminLastName
+        parameter_value: Bar
+      - parameter_key: AdminEmail
+        parameter_value: foo@example.com
+      - parameter_key: AdminUserName
+        parameter_value: admin
+      - parameter_key: AdminPassword
+        parameter_value: aUA*dKTsLHuNY6wygJ3z7DFUU8saUZuG
+      - parameter_key: QSS3BucketName
+        parameter_value: aws-quickstart
+      - parameter_key: QSS3KeyPrefix
+        parameter_value: quickstart-magento/
     deploy_method: stack_set
-    deploy_to_ou:
-      - Workloads
+    deployment_targets:
+      organizational_units:
+        - Workloads
     regions:
       - us-east-1

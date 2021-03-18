@@ -1,0 +1,73 @@
+project:
+  name: quickstart-magento
+  owner: quickstart-eng@amazon.com
+  package_lambda: false
+  regions:
+  - ap-northeast-1
+  - ap-northeast-2
+  - ap-south-1
+  - ap-southeast-1
+  - ap-southeast-2
+  - ca-central-1
+  - eu-central-1
+  - eu-west-1
+  - eu-west-2
+  - sa-east-1
+  - us-east-1
+  - us-east-2
+  - us-west-1
+  - us-west-2
+  s3_bucket: ''
+tests:
+  aurora:
+    parameters:
+      AccessCIDR: 10.0.0.0/16
+      AdminEmail: foo@example.com
+      AdminFirstName: Foo
+      AdminLastName: Bar
+      AdminPassword: $[taskcat_genpass_32]
+      AdminUserName: admin
+      AvailabilityZones: $[taskcat_genaz_2]
+      DBMasterUserPassword: Passw0rd1!
+      KeyPairName: $[taskcat_getkeypair]
+      MagentoReleaseMedia: override
+      MagentoVersion: '2.3'
+      NotificationEmail: foo@example.com
+      QSS3BucketName: $[taskcat_autobucket]
+      QSS3KeyPrefix: quickstart-magento/
+      RemoteAccessCIDR: 10.0.0.0/16
+    regions:
+    - ap-southeast-2
+    - eu-central-1
+    - eu-west-1
+    - us-east-2
+    - us-west-2
+    s3_bucket: ''
+    template: templates/magento-master.template
+  mysql:
+    parameters:
+      AccessCIDR: 10.0.0.0/16
+      AdminEmail: foo@example.com
+      AdminFirstName: Foo
+      AdminLastName: Bar
+      AdminPassword: $[taskcat_genpass_32]
+      AdminUserName: admin
+      AvailabilityZones: $[taskcat_genaz_2]
+      DBEngineType: MySQL
+      DBMasterUserPassword: $[taskcat_genpass_32]
+      KeyPairName: $[taskcat_getkeypair]
+      MagentoReleaseMedia: override
+      MagentoVersion: '2.3'
+      NotificationEmail: foo@example.com
+      QSS3BucketName: $[taskcat_autobucket]
+      QSS3KeyPrefix: quickstart-magento/
+      RemoteAccessCIDR: 10.0.0.0/16
+    regions:
+    - ap-southeast-2
+    - eu-central-1
+    - eu-west-1
+    - us-east-1
+    - us-east-2
+    - us-west-2
+    s3_bucket: ''
+    template: templates/magento-master.template
