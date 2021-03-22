@@ -165,4 +165,3 @@ Outputs:
   ElastiCacheSecurityGroup:
     Description: Elasticache Security Group
     Value: !Ref ElastiCacheSecurityGroup
-...

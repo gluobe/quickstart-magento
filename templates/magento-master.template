@@ -657,4 +657,3 @@ Outputs:
     Description: The URL of the ELB, you should create a CNAME or alias to this name
       if you specified a DNS name
     Value: !GetAtt MagentoStack.Outputs.ELBURL
-...

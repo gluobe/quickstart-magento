@@ -188,4 +188,3 @@ Outputs:
   RDSEndPointPort:
     Description: Amazon Aurora Endpoint to connect
     Value: !Sub ${AuroraDBCluster.Endpoint.Port}
-...

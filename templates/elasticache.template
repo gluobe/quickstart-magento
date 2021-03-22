@@ -73,4 +73,3 @@ Outputs:
   ElastiCacheEndpoint:
     Description: ElastiCache address
     Value: !GetAtt ElastiCacheCluster.PrimaryEndPoint.Address
-...
