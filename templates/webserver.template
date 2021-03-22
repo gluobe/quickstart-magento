@@ -670,4 +670,3 @@ Outputs:
           - !Split
             - ':'
             - !GetAtt MagentoAMIWaitCondition.Data
-...

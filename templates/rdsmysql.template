@@ -176,4 +176,3 @@ Outputs:
   RDSEndPointPort:
     Description: Amazon Aurora Endpoint to connect
     Value: !Sub ${MySQLDB.Endpoint.Port}
-...
