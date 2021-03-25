@@ -20,7 +20,7 @@ resources:
       - parameter_key: NotificationEmail
         parameter_value: foo@example.com
       - parameter_key: DBMasterUserPassword
-        parameter_value: Passw0rd1!
+        parameter_value: _get_ssm_secure_string_/qs/genericpw/12ANS
       - parameter_key: AdminFirstName
         parameter_value: Foo
       - parameter_key: AdminLastName
@@ -30,7 +30,7 @@ resources:
       - parameter_key: AdminUserName
         parameter_value: admin
       - parameter_key: AdminPassword
-        parameter_value: aUA*dKTsLHuNY6wygJ3z7DFUU8saUZuG
+        parameter_value: _get_ssm_secure_string_/qs/genericpw/12ANS
       - parameter_key: QSS3BucketName
         parameter_value: aws-quickstart
       - parameter_key: QSS3KeyPrefix
@@ -38,6 +38,6 @@ resources:
     deploy_method: stack_set
     deployment_targets:
       organizational_units:
-        - Workloads
+        - Custom
     regions:
       - us-east-1
