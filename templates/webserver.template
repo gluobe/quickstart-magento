@@ -137,10 +137,10 @@ Parameters:
     - m4.2xlarge
     - m4.4xlarge
     - m4.10xlarge
-    - m3.medium
-    - m3.large
-    - m3.xlarge
-    - m3.2xlarge
+    - m5.large
+    - m5.xlarge
+    - m5.2xlarge
+    - m5.4xlarge
     - c4.large
     - c4.xlarge
     - c4.2xlarge
@@ -151,15 +151,16 @@ Parameters:
     - c3.2xlarge
     - c3.4xlarge
     - c3.8xlarge
-    - r3.large
-    - r3.xlarge
-    - r3.2xlarge
-    - r3.4xlarge
-    - r3.8xlarge
-    - i2.xlarge
-    - i2.2xlarge
-    - i2.4xlarge
-    - i2.8xlarge
+    - r5.large
+    - r5.xlarge
+    - r5.2xlarge
+    - r5.4xlarge
+    - r5.8xlarge
+    - i3.large
+    - i3.xlarge
+    - i3.2xlarge
+    - i3.4xlarge
+    - i3.8xlarge
     ConstraintDescription: Choose an instance type.
     Default: m4.large
     Description: Web Server node instance type
