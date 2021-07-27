@@ -10,5 +10,5 @@ EOF
 
 sed -i 's/listen 80/listen 8080/g' /etc/nginx/nginx.conf
 
-/etc/init.d/nginx reload
-/etc/init.d/varnish start
+service nginx reload
+service varnish start
