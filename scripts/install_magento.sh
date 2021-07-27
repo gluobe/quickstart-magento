@@ -625,5 +625,4 @@ EOF
 
 crontab -u ec2-user magento.cron
 
-
-
+sh install-varnish.sh

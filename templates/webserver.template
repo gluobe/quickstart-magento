@@ -333,6 +333,16 @@ Resources:
               owner: root
               group: root
               authentication: S3AccessCreds
+            /install_varnish.sh:
+              source:
+                !Sub
+                  - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/install_varnish.sh
+                  - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+                    S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+              mode: '000644'
+              owner: root
+              group: root
+              authentication: S3AccessCreds
             /configure_magento.sh:
               source:
                 !Sub
