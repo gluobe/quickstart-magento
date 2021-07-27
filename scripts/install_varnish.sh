@@ -40,5 +40,7 @@ EOF
 
 sed -i 's/listen 80/listen 8080/g' /etc/nginx/nginx.conf
 
+chkconfig varnish on
+
 service nginx reload
 service varnish start
