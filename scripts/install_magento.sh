@@ -617,11 +617,11 @@ sed -i s/${adminpassword}/xxxxx/g /var/log/cloud-init.log
 # Remove params file used in bootstrapping
 rm -f ${PARAMS_FILE}
 
-cat << EOF > magento.cron
-* * * * * /usr/bin/php -c /etc/php-7.2.ini /var/www/html/bin/magento cron:run | grep -v "Ran jobs by schedule" >> /var/www/html/var/log/magento.cron.log
-* * * * * /usr/bin/php -c /etc/php-7.2.ini /var/www/html/update/cron.php >> /var/www/html/var/log/update.cron.log
-* * * * * /usr/bin/php -c /etc/php-7.2.ini /var/www/html/bin/magento setup:cron:run >> /var/www/html/var/log/setup.cron.log
-EOF
+#cat << EOF > magento.cron
+#* * * * * /usr/bin/php -c /etc/php-7.2.ini /var/www/html/bin/magento cron:run | grep -v "Ran jobs by schedule" >> /var/www/html/var/log/magento.cron.log
+#* * * * * /usr/bin/php -c /etc/php-7.2.ini /var/www/html/update/cron.php >> /var/www/html/var/log/update.cron.log
+#* * * * * /usr/bin/php -c /etc/php-7.2.ini /var/www/html/bin/magento setup:cron:run >> /var/www/html/var/log/setup.cron.log
+#EOF
 
 crontab -u ec2-user magento.cron
 

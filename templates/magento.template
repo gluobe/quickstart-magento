@@ -589,6 +589,51 @@ Resources:
         AdminUserName: !Ref AdminUserName
         AdminPassword: !Ref AdminPassword
         SSLCertificateId: !Ref SSLCertificateId
+  CronServerASGStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub
+          - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/cron.template'
+          - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+            S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+      Parameters:
+        KeyPair: !Ref KeyPairName
+        ELBSecurityGroup: !GetAtt SecurityGroupStack.Outputs.ELBSecurityGroup
+        EFSSecurityGroup: !GetAtt SecurityGroupStack.Outputs.EFSSecurityGroup
+        CronServerSecurityGroup: !GetAtt SecurityGroupStack.Outputs.CronServerSecurityGroup
+        NotificationEmail: !Ref NotificationEmail
+        CronServerMinSize: !Ref CronServerMinSize
+        CronServerMaxSize: !Ref CronServerMaxSize
+        CronServerInstanceType: !Ref CronServerInstanceType
+        CronServerDesiredCapacity: !Ref CronServerDesiredCapacity
+        CronServerSubnets: !Sub ${PrivateSubnet1ID},${PrivateSubnet2ID}
+        ElasticLoadBalancerSubnets: !Sub ${PublicSubnet1ID},${PublicSubnet2ID}
+        VPCID: !Ref VPCID
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3BucketRegion: !Ref QSS3BucketRegion
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        MagentoCurrency: !Ref MagentoCurrency
+        MagentoLanguage: !Ref MagentoLanguage
+        MagentoTimezone: !Ref MagentoTimezone
+        MagentoReleaseMedia: !Ref MagentoReleaseMedia
+        MagentoVersion: !Ref MagentoVersion
+        DBMasterUserPassword: !Ref DBMasterUserPassword
+        DBMasterUsername: !Ref DBMasterUsername
+        DBName: !Ref DBName
+        MySQLEndPointAddress:
+            !If
+            - UseAurora
+            - !GetAtt RDSStack.Outputs.AuroraClusterEndpoint
+            - !GetAtt RDSStack.Outputs.RDSEndPointAddress
+        ElastiCacheEndpoint: !GetAtt ElastiCache.Outputs.ElastiCacheEndpoint
+        DNSName: !Ref DNSName
+        AdminFirstName: !Ref AdminFirstName
+        AdminLastName: !Ref AdminLastName
+        AdminEmail: !Ref AdminEmail
+        AdminUserName: !Ref AdminUserName
+        AdminPassword: !Ref AdminPassword
+        SSLCertificateId: !Ref SSLCertificateId
 Outputs:
   URL:
     Description: The URL of the website
