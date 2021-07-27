@@ -8,11 +8,7 @@ backend default {
 }
 EOF
 
-systemctl start varnish
-systemctl enable varnish
+sed -i 's/listen 80/listen 8080/g' /etc/nginx/nginx.conf
 
-nginx_config="/etc/nginx/nginx.conf"
-nginx_default="listen 80 default_server;"
-nginx_varnish="listen 8080 default_server;"
-
-sed -i 's/'$nginx_default'/'$nginx_varnish'/' $nginx_config
+/etc/init.d/nginx reload
+/etc/init.d/varnish start
