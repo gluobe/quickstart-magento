@@ -41,9 +41,6 @@ Parameters:
   EFSSecurityGroup:
     Description: EFS Security Group
     Type: AWS::EC2::SecurityGroup::Id
-  ELBSecurityGroup:
-    Description: ELB Security Group
-    Type: AWS::EC2::SecurityGroup::Id
   ElastiCacheEndpoint:
     Default: ''
     Description: ElastiCache Endpoint

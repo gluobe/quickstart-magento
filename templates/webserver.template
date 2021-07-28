@@ -651,8 +651,7 @@ Resources:
 Outputs:
   FileSystemId:
     Description: The ID of the EFS filesystem
-    Value:
-      - !Ref FileSystem
+    Value: !Ref FileSystem
   URL:
     Description: The URL of the website
     Value:
