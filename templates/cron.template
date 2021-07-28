@@ -530,5 +530,4 @@ Resources:
         PredefinedMetricSpecification:
           PredefinedMetricType: ASGAverageCPUUtilization
         TargetValue: 80.0
-Outputs:
 ...
