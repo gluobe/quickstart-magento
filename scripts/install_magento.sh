@@ -622,7 +622,6 @@ rm -f ${PARAMS_FILE}
 #* * * * * /usr/bin/php -c /etc/php-7.2.ini /var/www/html/update/cron.php >> /var/www/html/var/log/update.cron.log
 #* * * * * /usr/bin/php -c /etc/php-7.2.ini /var/www/html/bin/magento setup:cron:run >> /var/www/html/var/log/setup.cron.log
 #EOF
-
-crontab -u ec2-user magento.cron
+#crontab -u ec2-user magento.cron
 
 sh install_varnish.sh

@@ -632,6 +632,7 @@ Resources:
           - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
             S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
+        FileSystemId: !GetAtt WebServerASGStack.Outputs.FileSystemId
         KeyPair: !Ref KeyPairName
         EFSSecurityGroup: !GetAtt SecurityGroupStack.Outputs.EFSSecurityGroup
         CronServerSecurityGroup: !GetAtt SecurityGroupStack.Outputs.WebServerSecurityGroup

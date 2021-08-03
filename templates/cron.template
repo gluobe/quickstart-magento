@@ -163,13 +163,16 @@ Parameters:
     Description: A list of subnet identifiers of Amazon VPCs where the CronServer Autoscaling
       would be launched.
     Type: List<AWS::EC2::Subnet::Id>
+  FileSystemId:
+    Description: The EFS id
+    Type: String
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
 Resources:
   MountTarget1:
     Type: AWS::EFS::MountTarget
     Properties:
-      FileSystemId: !GetAtt WebServerStack.Outputs.FileSystemId
+      FileSystemId: !Ref FileSystemId
       SubnetId:
         !Select
         - '0'
@@ -179,7 +182,7 @@ Resources:
   MountTarget2:
     Type: AWS::EFS::MountTarget
     Properties:
-      FileSystemId: !GetAtt WebServerStack.Outputs.FileSystemId
+      FileSystemId: !Ref FileSystemId
       SubnetId:
         !Select
         - '1'
@@ -328,16 +331,12 @@ Resources:
                   AdminUserName|${AdminUserName}
                   AdminPassword|${AdminPassword}
                   ElastiCacheEndpoint|${ElastiCacheEndpoint}
-                  FileSystemId|${Param1}
-                  FileSystem|${FileSystem}
+                  FileSystemId|${FileSystemId}
                   MagentoReleaseMedia|${MagentoReleaseMedia}
                   MagentoVersion|${MagentoVersion}
                   MagentoLanguage|${MagentoLanguage}
                   MagentoCurrency|${MagentoCurrency}
                   MagentoTimezone|${MagentoTimezone}
-                - Param1:
-                    - !GetAtt WebServerStack.Outputs.FileSystemId
-                    - !Ref FileSystemId
               mode: '000440'
               owner: root
               group: root
@@ -490,8 +489,6 @@ Resources:
       MinSize: !Ref CronServerMinSize
       MaxSize: !Ref CronServerMaxSize
       DesiredCapacity: !Ref CronServerDesiredCapacity
-      TargetGroupARNs:
-      - !Ref ALBTargetGroup
       VPCZoneIdentifier: !Ref CronServerSubnets
       NotificationConfigurations:
       - TopicARN: !Ref NotificationTopic
@@ -518,12 +515,12 @@ Resources:
           Fn::Sub: |
             #cloud-config
             runcmd:
-            - echo "${FileSystem}.efs.${AWS::Region}.amazonaws.com:/    /var/www/html/pub/media   nfs4    defaults" >> /etc/fstab
+            - echo "${FileSystemId}.efs.${AWS::Region}.amazonaws.com:/    /var/www/html/pub/media   nfs4    defaults" >> /etc/fstab
             - mount -a
   CronServerTargetTrackingScalingPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
-      AutoScalingGroupName: !Ref WebServerASG
+      AutoScalingGroupName: !Ref CronServerASG
       Cooldown: '60'
       PolicyType: TargetTrackingScaling
       TargetTrackingConfiguration:
