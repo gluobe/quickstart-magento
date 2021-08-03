@@ -319,8 +319,7 @@ Resources:
               authentication: S3AccessCreds
             /tmp/params.txt:
               content:
-                !Sub
-                - |
+                !Sub |
                   MySQLEndPointAddress|${MySQLEndPointAddress}
                   DBMasterUsername|${DBMasterUsername}
                   DBMasterUserPassword|${DBMasterUserPassword}
