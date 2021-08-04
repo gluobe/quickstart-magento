@@ -38,6 +38,11 @@ Parameters:
     Default: ''
     Description: RDS MySQL Database Name
     Type: String
+  DNSName:
+    Default: ''
+    Description: DNS Name for the magento site, you should create an alias for the
+      ELB after the stack creation
+    Type: String
   EFSSecurityGroup:
     Description: EFS Security Group
     Type: AWS::EC2::SecurityGroup::Id
@@ -169,26 +174,6 @@ Parameters:
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
 Resources:
-  MountTarget1:
-    Type: AWS::EFS::MountTarget
-    Properties:
-      FileSystemId: !Ref FileSystemId
-      SubnetId:
-        !Select
-        - '0'
-        - !Ref CronServerSubnets
-      SecurityGroups:
-      - !Ref EFSSecurityGroup
-  MountTarget2:
-    Type: AWS::EFS::MountTarget
-    Properties:
-      FileSystemId: !Ref FileSystemId
-      SubnetId:
-        !Select
-        - '1'
-        - !Ref CronServerSubnets
-      SecurityGroups:
-      - !Ref EFSSecurityGroup
   MagentoMainLogGroup:
     Type: AWS::Logs::LogGroup
   NewIamInstanceRole:
@@ -234,9 +219,6 @@ Resources:
       Timeout: '3600'
   MagentoAMI:
     Type: AWS::EC2::Instance
-    DependsOn:
-    - MountTarget1
-    - MountTarget2
     Metadata:
       Comment: Install a Magento cron server
       AWS::CloudFormation::Authentication:
@@ -324,6 +306,7 @@ Resources:
                   DBMasterUsername|${DBMasterUsername}
                   DBMasterUserPassword|${DBMasterUserPassword}
                   DBName|${DBName}
+                  DNSName|${DNSName}
                   AdminFirstName|${AdminFirstName}
                   AdminLastName|${AdminLastName}
                   AdminEmail|${AdminEmail}
