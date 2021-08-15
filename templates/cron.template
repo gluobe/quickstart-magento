@@ -354,9 +354,10 @@ Resources:
           Fn::Sub: |
             #!/bin/bash
             /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource MagentoAMI  --region ${AWS::Region}
-            chmod a+x install_magento.sh
-            ./install_magento.sh /tmp/params.txt
-            /opt/aws/bin/cfn-signal -e $? -d "`cat /home/ec2-user/adminuri`" -r "Build Process Complete" '${MagentoAMIWaitHandle}'
+            #chmod a+x install_magento.sh
+            #./install_magento.sh /tmp/params.txt
+            #/opt/aws/bin/cfn-signal -e $? -d "`cat /home/ec2-user/adminuri`" -r "Build Process Complete" '${MagentoAMIWaitHandle}'
+            /opt/aws/bin/cfn-signal -e $? -d "localhost" -r "Build Process Complete" '${MagentoAMIWaitHandle}'
       Tags:
       - Key: Application
         Value: AWS Quick Start (Magento)
