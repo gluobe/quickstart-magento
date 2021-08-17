@@ -1,0 +1,38 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Magento 2.1 RabbitMQ Template (gluo)
+Parameters:
+  BrokerUsername:
+    Description: User-defined AmazonMQ username
+    Type: String
+    Default: 'rabbit'
+  BrokerPassword:
+    Description: User-defined AmazonMQ password
+    Type: String
+    Default: 'simplepassword'
+  BrokerInstanceType:
+    Description: AmazonMQ instance type
+    Type: String
+    Default: 'mq.t3.micro'
+  RabbitVersion:
+    Description: The RabbitMQ version to deploy
+    Type: String
+    Default: "3.8.6"
+Resources:
+  AmazonMQBroker:
+    Type: "AWS::AmazonMQ::Broker"
+    Properties:
+      AutoMinorVersionUpgrade: "true"
+      BrokerName: 'MagentoBroker'
+      DeploymentMode: SINGLE_INSTANCE
+      EngineType: RabbitMQ
+      EngineVersion: !Ref RabbitVersion
+      HostInstanceType: !Ref BrokerInstanceType
+      PubliclyAccessible: "true"
+      Users:
+        -
+          ConsoleAccess: "true"
+          Groups: 
+            - Administrators
+          Username: !Ref BrokerUsername
+          Password: !Ref BrokerPassword
