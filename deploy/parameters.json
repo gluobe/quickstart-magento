@@ -174,5 +174,33 @@
 	{
 	"ParameterKey": "CronServerInstanceType",
 	"ParameterValue": "t2.micro"
+	},
+	{
+	"ParameterKey": "ESInstanceType",
+	"ParameterValue": "m3.medium.elasticsearch"
+	},
+	{
+	"ParameterKey": "ESInstanceCount",
+	"ParameterValue": "1"
+	},
+	{
+	"ParameterKey": "ESVolumeSize",
+	"ParameterValue": "20"
+	},
+	{
+	"ParameterKey": "ESVolumeType",
+	"ParameterValue": "gp2"
+	},
+	{
+	"ParameterKey": "BrokerUsername",
+	"ParameterValue": "magento"
+	},
+	{
+	"ParameterKey": "BrokerPassword",
+	"ParameterValue": "simplepassword"
+	},
+	{
+	"ParameterKey": "BrokerInstanceType",
+	"ParameterValue": "mq.t3.micro"
 	}
 ]  

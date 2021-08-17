@@ -11,25 +11,35 @@ Parameters:
     Type: String
     Default: '7.10'
   InstanceType:
+    Description: Elasticsearch Instance Type
     Type: String
     Default: 'm3.medium.elasticsearch'
   InstanceCount:
+    Description: Elasticsearch Instance Count
     Type: String
     Default: '1'
   PrincipalArn:
+    Description: Elasticsearch IAM User
     Type: String
-    Default: 'arn:aws:iam::292242131230:user/*'
-#  DedicatedMasterCount:
-#    Type: String
-#    Default: '1'
-#  AvailabilityZone:
-#    Type: String
-#  CidrBlock:
-#    Type: String
-#  GroupDescription:
-#    Type: String
-#  SGName:
-#    Type: String
+    Default: 'arn:aws:iam::292242131230:user/ward.vandenbroeck@gluo.be'
+  EBSIops:
+    Description: Elasticsearch EBS iops
+    Type: Number
+    Default: 0
+  EBSVolumeSize:
+    Description: Elasticsearch EBS volume size (GB)
+    Type: Number
+    Default: 20
+  EBSVolumeType:
+    Description: Elasticsearch EBS volume type
+    Type: String
+    Default: "gp2"
+  ESSubnetIds:
+    Description: Elasticsearch Subnets
+    Type: AWS::EC2::Subnet::Id
+  ESSecurityGroupIds:
+    Description: Elasticsearch SecurityGroups
+    Type: AWS::EC2::SecurityGroup::Id
 Resources:
   ElasticsearchDomain:
     Type: 'AWS::Elasticsearch::Domain'
@@ -48,9 +58,9 @@ Resources:
       DomainName: !Ref DomainName
       EBSOptions:
         EBSEnabled: true
-        Iops: 0
-        VolumeSize: 20
-        VolumeType: 'gp2'
+        Iops: !Ref EBSIops
+        VolumeSize: !Ref EBSVolumeSize
+        VolumeType: !Ref EBSVolumeType
       ElasticsearchClusterConfig: 
         DedicatedMasterEnabled: false
         InstanceCount: !Ref InstanceCount
@@ -74,9 +84,11 @@ Resources:
         Value: magento
       - Key: team
         Value: gluo
-      #VPCOptions: 
-      #  SubnetIds:
-      #    - Ref: subn
+      VPCOptions: 
+        SubnetIds:
+          - !Ref ESSubnetIds
+        SecurityGroupIds:
+          - !Ref ESSecurityGroupIds    
       #AdvancedSecurityOptions: 
       #  AdvancedSecurityOptionsInput
       #CognitoOptions: 
