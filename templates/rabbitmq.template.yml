@@ -18,6 +18,12 @@ Parameters:
     Description: The RabbitMQ version to deploy
     Type: String
     Default: "3.8.6"
+  BrokerSecurityGroups:
+    Description: The Security Group to protect RabbitMQ
+    Type: List<AWS::EC2::SecurityGroup::GroupName>
+  BrokerSubnetIds:
+    Description: The Subnet to run RabbitMQ
+    Type: List<AWS::EC2::Subnet::Id>
 Resources:
   AmazonMQBroker:
     Type: "AWS::AmazonMQ::Broker"
@@ -28,7 +34,7 @@ Resources:
       EngineType: RabbitMQ
       EngineVersion: !Ref RabbitVersion
       HostInstanceType: !Ref BrokerInstanceType
-      PubliclyAccessible: "true"
+      PubliclyAccessible: "false"
       Users:
         -
           ConsoleAccess: "true"
@@ -36,3 +42,7 @@ Resources:
             - Administrators
           Username: !Ref BrokerUsername
           Password: !Ref BrokerPassword
+      SecurityGroups:
+        - !Ref BrokerSecurityGroups
+      SubnetIds:
+        - !Ref BrokerSubnetIds
