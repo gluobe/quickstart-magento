@@ -5,7 +5,7 @@ Parameters:
   DomainName:
     Description: User-defined Elasticsearch domain name
     Type: String
-    Default: 'test'
+    Default: 'magento'
   ElasticsearchVersion:
     Description: User-defined Elasticsearch version
     Type: String
@@ -16,6 +16,9 @@ Parameters:
   InstanceCount:
     Type: String
     Default: '1'
+  PrincipalArn:
+    Type: String
+    Default: 'arn:aws:iam::292242131230:user/*'
 #  DedicatedMasterCount:
 #    Type: String
 #    Default: '1'
@@ -37,7 +40,7 @@ Resources:
           -
             Effect: 'Allow'
             Principal:
-              AWS: 'arn:aws:iam::292242131230:user/ward.vandenbroeck@gluo.be'
+              AWS: !Ref PrincipalArn
             Action: 'es:*'
             Resource: 'arn:aws:logs:eu-central-1:292242131230:domain/*'
       AdvancedOptions: 
