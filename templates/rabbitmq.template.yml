@@ -10,6 +10,7 @@ Parameters:
     Description: User-defined AmazonMQ password
     Type: String
     Default: 'simplepassword'
+    NoEcho: true
   BrokerInstanceType:
     Description: AmazonMQ instance type
     Type: String
@@ -18,31 +19,31 @@ Parameters:
     Description: The RabbitMQ version to deploy
     Type: String
     Default: "3.8.6"
-  BrokerSecurityGroups:
+  BrokerSecurityGroup:
     Description: The Security Group to protect RabbitMQ
-    Type: List<AWS::EC2::SecurityGroup::GroupName>
-  BrokerSubnetIds:
+    Type: AWS::EC2::SecurityGroup::Id
+  BrokerSubnetId:
     Description: The Subnet to run RabbitMQ
-    Type: List<AWS::EC2::Subnet::Id>
+    Type: AWS::EC2::Subnet::Id
 Resources:
   AmazonMQBroker:
     Type: "AWS::AmazonMQ::Broker"
     Properties:
-      AutoMinorVersionUpgrade: "true"
+      AutoMinorVersionUpgrade: true
       BrokerName: 'MagentoBroker'
       DeploymentMode: SINGLE_INSTANCE
-      EngineType: RabbitMQ
+      EngineType: RABBITMQ
       EngineVersion: !Ref RabbitVersion
       HostInstanceType: !Ref BrokerInstanceType
-      PubliclyAccessible: "false"
+      PubliclyAccessible: false
       Users:
         -
-          ConsoleAccess: "true"
+          ConsoleAccess: true
           Groups: 
             - Administrators
           Username: !Ref BrokerUsername
           Password: !Ref BrokerPassword
       SecurityGroups:
-        - !Ref BrokerSecurityGroups
+        - !Ref BrokerSecurityGroup
       SubnetIds:
-        - !Ref BrokerSubnetIds
+        - !Ref BrokerSubnetId
