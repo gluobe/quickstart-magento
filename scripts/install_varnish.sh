@@ -30,7 +30,7 @@ NPROCS="unlimited"
 # use Alternative 3, Advanced configuration, below
 RELOAD_VCL=1
 
-DAEMON_OPTS="-a :6081 \
+DAEMON_OPTS="-a :80 \
              -T localhost:6082 \
              -f /etc/varnish/default.vcl \
              -u varnish -g varnish \

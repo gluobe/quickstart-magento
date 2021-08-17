@@ -660,6 +660,7 @@ Resources:
             - !GetAtt RDSStack.Outputs.AuroraClusterEndpoint
             - !GetAtt RDSStack.Outputs.RDSEndPointAddress
         ElastiCacheEndpoint: !GetAtt ElastiCache.Outputs.ElastiCacheEndpoint
+        DNSName: "example.com"
         AdminFirstName: !Ref AdminFirstName
         AdminLastName: !Ref AdminLastName
         AdminEmail: !Ref AdminEmail
