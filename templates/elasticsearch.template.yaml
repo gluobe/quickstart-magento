@@ -5,17 +5,20 @@ Parameters:
   DomainName:
     Description: User-defined Elasticsearch domain name
     Type: String
+    Default: 'test'
   ElasticsearchVersion:
     Description: User-defined Elasticsearch version
     Type: String
+    Default: '7.10'
   InstanceType:
     Type: String
+    Default: 'm3.medium.elasticsearch'
   InstanceCount:
     Type: String
     Default: '1'
-  DedicatedMasterCount:
-    Type: String
-    Default: '1'
+#  DedicatedMasterCount:
+#    Type: String
+#    Default: '1'
 #  AvailabilityZone:
 #    Type: String
 #  CidrBlock:
@@ -34,9 +37,9 @@ Resources:
           -
             Effect: 'Allow'
             Principal:
-              AWS: '*'
+              AWS: 'arn:aws:iam::292242131230:user/ward.vandenbroeck@gluo.be'
             Action: 'es:*'
-            Resource: '*'
+            Resource: 'arn:aws:logs:eu-central-1:292242131230:domain/*'
       AdvancedOptions: 
         rest.action.multi.allow_explicit_index: 'true'
       DomainName: !Ref DomainName
@@ -46,23 +49,23 @@ Resources:
         VolumeSize: 20
         VolumeType: 'gp2'
       ElasticsearchClusterConfig: 
-        DedicatedMasterEnabled: true
+        DedicatedMasterEnabled: false
         InstanceCount: !Ref InstanceCount
-        ZoneAwarenessEnabled: true
+        ZoneAwarenessEnabled: false
         InstanceType: !Ref InstanceType
-        DedicatedMasterType: !Ref InstanceType
-        DedicatedMasterCount: !Ref DedicatedMasterCount
+        #DedicatedMasterType: !Ref InstanceType
+        #DedicatedMasterCount: !Ref DedicatedMasterCount
       ElasticsearchVersion: !Ref ElasticsearchVersion
       LogPublishingOptions: 
         ES_APPLICATION_LOGS:
-            CloudWatchLogsLogGroupArn: 'arn:aws:logs:eu-central-1:292242131230:log-group:/aws/aes/domains/es-application-logs'
-            Enabled: true
+            Enabled: false
+            #CloudWatchLogsLogGroupArn: 'arn:aws:logs:eu-central-1:292242131230:log-group:/aws/aes/domains/es-application-logs'
         SEARCH_SLOW_LOGS:
-            CloudWatchLogsLogGroupArn: 'arn:aws:logs:eu-central-1:292242131230:log-group:/aws/aes/domains/es-slow-logs'
-            Enabled: true
+            Enabled: false
+            #CloudWatchLogsLogGroupArn: 'arn:aws:logs:eu-central-1:292242131230:log-group:/aws/aes/domains/es-slow-logs'
         INDEX_SLOW_LOGS:
-            CloudWatchLogsLogGroupArn: 'arn:aws:logs:eu-central-1:292242131230:log-group:/aws/aes/domains/es-index-slow-logs'
-            Enabled: true
+            Enabled: false
+            #CloudWatchLogsLogGroupArn: 'arn:aws:logs:eu-central-1:292242131230:log-group:/aws/aes/domains/es-index-slow-logs'
       Tags: 
       - Key: solution
         Value: magento
