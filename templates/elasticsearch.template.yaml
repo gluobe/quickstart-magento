@@ -1,0 +1,90 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Magento 2.1 Elasticsearch Template (gluo)
+Parameters:
+  DomainName:
+    Description: User-defined Elasticsearch domain name
+    Type: String
+  ElasticsearchVersion:
+    Description: User-defined Elasticsearch version
+    Type: String
+  InstanceType:
+    Type: String
+  InstanceCount:
+    Type: String
+    Default: '1'
+  DedicatedMasterCount:
+    Type: String
+    Default: '1'
+#  AvailabilityZone:
+#    Type: String
+#  CidrBlock:
+#    Type: String
+#  GroupDescription:
+#    Type: String
+#  SGName:
+#    Type: String
+Resources:
+  ElasticsearchDomain:
+    Type: 'AWS::Elasticsearch::Domain'
+    Properties:
+      AccessPolicies:
+        Version: '2012-10-17'
+        Statement:
+          -
+            Effect: 'Allow'
+            Principal:
+              AWS: '*'
+            Action: 'es:*'
+            Resource: '*'
+      AdvancedOptions: 
+        rest.action.multi.allow_explicit_index: 'true'
+      DomainName: !Ref DomainName
+      EBSOptions:
+        EBSEnabled: true
+        Iops: 0
+        VolumeSize: 20
+        VolumeType: 'gp2'
+      ElasticsearchClusterConfig: 
+        DedicatedMasterEnabled: true
+        InstanceCount: !Ref InstanceCount
+        ZoneAwarenessEnabled: true
+        InstanceType: !Ref InstanceType
+        DedicatedMasterType: !Ref InstanceType
+        DedicatedMasterCount: !Ref DedicatedMasterCount
+      ElasticsearchVersion: !Ref ElasticsearchVersion
+      LogPublishingOptions: 
+        ES_APPLICATION_LOGS:
+            CloudWatchLogsLogGroupArn: 'arn:aws:logs:eu-central-1:292242131230:log-group:/aws/aes/domains/es-application-logs'
+            Enabled: true
+        SEARCH_SLOW_LOGS:
+            CloudWatchLogsLogGroupArn: 'arn:aws:logs:eu-central-1:292242131230:log-group:/aws/aes/domains/es-slow-logs'
+            Enabled: true
+        INDEX_SLOW_LOGS:
+            CloudWatchLogsLogGroupArn: 'arn:aws:logs:eu-central-1:292242131230:log-group:/aws/aes/domains/es-index-slow-logs'
+            Enabled: true
+      Tags: 
+      - Key: solution
+        Value: magento
+      - Key: team
+        Value: gluo
+      #VPCOptions: 
+      #  SubnetIds:
+      #    - Ref: subn
+      #AdvancedSecurityOptions: 
+      #  AdvancedSecurityOptionsInput
+      #CognitoOptions: 
+      #  CognitoOptions
+      #DomainEndpointOptions: 
+      #  DomainEndpointOptions
+      #EncryptionAtRestOptions: 
+      #  EncryptionAtRestOptions
+      #NodeToNodeEncryptionOptions: 
+      #  NodeToNodeEncryptionOptions
+      #SnapshotOptions: 
+      #  SnapshotOptions
+#Outputs:
+#  ElastiCacheEndpoint:
+#    Description: ElastiCache address
+#    Value: !GetAtt ElastiCacheCluster.PrimaryEndPoint.Address
+#...
