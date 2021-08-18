@@ -729,7 +729,7 @@ Resources:
         EBSVolumeSize: !Ref ESVolumeSize
         EBSVolumeType: !Ref ESVolumeType
         ESSubnetIds: !Ref PrivateSubnet1ID
-        ESSecurityGroupIds: !GetAtt SecurityGroupStack.OutputsElasticSearchSecurityGroup
+        ESSecurityGroupIds: !GetAtt SecurityGroupStack.Outputs.ElasticSearchSecurityGroup
   RabbitMQStack:
     Type: AWS::CloudFormation::Stack
     Properties:
