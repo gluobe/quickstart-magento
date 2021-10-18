@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Magento 2.1 RabbitMQ Template (gluo)
+Description: Magento 2.* Amazon MQ (RabbitMQ) Template (Gluo)
 Parameters:
   BrokerUsername:
     Description: User-defined AmazonMQ username
@@ -12,6 +12,9 @@ Parameters:
     Default: 'simplepassword'
     NoEcho: true
   BrokerInstanceType:
+    AllowedValues:
+    - mq.t3.micro
+    - mq.t2.medium
     Description: AmazonMQ instance type
     Type: String
     Default: 'mq.t3.micro'
@@ -22,7 +25,7 @@ Parameters:
   BrokerSecurityGroup:
     Description: The Security Group to protect RabbitMQ
     Type: AWS::EC2::SecurityGroup::Id
-  BrokerSubnetId:
+  BrokerSubnetIds:
     Description: The Subnet to run RabbitMQ
     Type: AWS::EC2::Subnet::Id
 Resources:
@@ -30,7 +33,7 @@ Resources:
     Type: "AWS::AmazonMQ::Broker"
     Properties:
       AutoMinorVersionUpgrade: true
-      BrokerName: 'MagentoBroker'
+      BrokerName: !Join ["-", ['RabbitMQ-Magento', !Select [0, !Split ["-", !Sub "${AWS::StackName}"]]]]
       DeploymentMode: SINGLE_INSTANCE
       EngineType: RABBITMQ
       EngineVersion: !Ref RabbitVersion
@@ -46,4 +49,7 @@ Resources:
       SecurityGroups:
         - !Ref BrokerSecurityGroup
       SubnetIds:
-        - !Ref BrokerSubnetId
+        - !Ref BrokerSubnetIds
+      Tags: 
+      - Key: Name
+        Value: !Sub AmazonMQ-${AWS::StackName}

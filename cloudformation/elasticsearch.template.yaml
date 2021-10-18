@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Magento 2.1 Elasticsearch Template (gluo)
+Description: Magento 2.* Elasticsearch Template (Gluo)
 Parameters:
   DomainName:
     Description: User-defined Elasticsearch domain name
@@ -11,6 +11,9 @@ Parameters:
     Type: String
     Default: '7.10'
   InstanceType:
+    AllowedValues:
+    - t2.medium.elasticsearch
+    - m3.medium.elasticsearch
     Description: Elasticsearch Instance Type
     Type: String
     Default: 'm3.medium.elasticsearch'
@@ -18,10 +21,6 @@ Parameters:
     Description: Elasticsearch Instance Count
     Type: String
     Default: '1'
-  PrincipalArn:
-    Description: Elasticsearch IAM User
-    Type: String
-    Default: 'arn:aws:iam::292242131230:user/ward.vandenbroeck@gluo.be'
   EBSIops:
     Description: Elasticsearch EBS iops
     Type: Number
@@ -41,7 +40,7 @@ Parameters:
     Description: Elasticsearch SecurityGroups
     Type: AWS::EC2::SecurityGroup::Id
 Resources:
-  ElasticsearchDomain:
+  ElasticSearchDomain:
     Type: 'AWS::Elasticsearch::Domain'
     Properties:
       AccessPolicies:
@@ -50,12 +49,11 @@ Resources:
           -
             Effect: 'Allow'
             Principal:
-              AWS: !Ref PrincipalArn
+              AWS: '*'
             Action: 'es:*'
-            Resource: 'arn:aws:logs:eu-central-1:292242131230:domain/*'
+            Resource: !Sub 'arn:aws:es:${AWS::Region}:${AWS::AccountId}:*/*'
       AdvancedOptions: 
         rest.action.multi.allow_explicit_index: 'true'
-      DomainName: !Ref DomainName
       EBSOptions:
         EBSEnabled: true
         Iops: !Ref EBSIops
@@ -66,43 +64,28 @@ Resources:
         InstanceCount: !Ref InstanceCount
         ZoneAwarenessEnabled: false
         InstanceType: !Ref InstanceType
-        #DedicatedMasterType: !Ref InstanceType
-        #DedicatedMasterCount: !Ref DedicatedMasterCount
       ElasticsearchVersion: !Ref ElasticsearchVersion
       LogPublishingOptions: 
         ES_APPLICATION_LOGS:
             Enabled: false
-            #CloudWatchLogsLogGroupArn: 'arn:aws:logs:eu-central-1:292242131230:log-group:/aws/aes/domains/es-application-logs'
+            #CloudWatchLogsLogGroupArn: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/aes/domains/es-application-logs'
         SEARCH_SLOW_LOGS:
             Enabled: false
-            #CloudWatchLogsLogGroupArn: 'arn:aws:logs:eu-central-1:292242131230:log-group:/aws/aes/domains/es-slow-logs'
+            #CloudWatchLogsLogGroupArn: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/aes/domains/es-slow-logs'
         INDEX_SLOW_LOGS:
             Enabled: false
-            #CloudWatchLogsLogGroupArn: 'arn:aws:logs:eu-central-1:292242131230:log-group:/aws/aes/domains/es-index-slow-logs'
-      Tags: 
-      - Key: solution
-        Value: magento
-      - Key: team
-        Value: gluo
+            #CloudWatchLogsLogGroupArn: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/aes/domains/es-index-slow-logs'
       VPCOptions: 
         SubnetIds:
           - !Ref ESSubnetIds
         SecurityGroupIds:
-          - !Ref ESSecurityGroupIds    
-      #AdvancedSecurityOptions: 
-      #  AdvancedSecurityOptionsInput
-      #CognitoOptions: 
-      #  CognitoOptions
-      #DomainEndpointOptions: 
-      #  DomainEndpointOptions
-      #EncryptionAtRestOptions: 
-      #  EncryptionAtRestOptions
-      #NodeToNodeEncryptionOptions: 
-      #  NodeToNodeEncryptionOptions
-      #SnapshotOptions: 
-      #  SnapshotOptions
-#Outputs:
-#  ElastiCacheEndpoint:
-#    Description: ElastiCache address
-#    Value: !GetAtt ElastiCacheCluster.PrimaryEndPoint.Address
-#...
+          - !Ref ESSecurityGroupIds
+      Tags: 
+      - Key: Name
+        Value: !Sub ElasticSearch-${AWS::StackName}
+
+Outputs:
+  ElasticsearchEndpoint:
+    Description: ElasticSearch domain endpoint
+    Value: !GetAtt ElasticSearchDomain.DomainEndpoint
+...
