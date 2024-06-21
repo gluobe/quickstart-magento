@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Magento 2.1 Elasticache Template (qs-1qup6raa9)
+Description: Magento 2.* Elasticache Template (Gluo)
 Parameters:
   ElastiCacheAutomaticFailover:
     AllowedValues:
@@ -39,7 +39,7 @@ Parameters:
     Default: '2'
     Description: Number of nodes in the ElastiCache cluster
     MaxValue: '5'
-    MinValue: '2'
+    MinValue: '1'
     Type: Number
   ElastiCacheSecurityGroup:
     Description: ElastiCache Security Group

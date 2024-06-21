@@ -1,0 +1,91 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Magento 2.* Elasticsearch Template (Gluo)
+Parameters:
+  DomainName:
+    Description: User-defined Elasticsearch domain name
+    Type: String
+    Default: 'magento'
+  ElasticsearchVersion:
+    Description: User-defined Elasticsearch version
+    Type: String
+    Default: '7.10'
+  InstanceType:
+    AllowedValues:
+    - t2.medium.elasticsearch
+    - m3.medium.elasticsearch
+    Description: Elasticsearch Instance Type
+    Type: String
+    Default: 'm3.medium.elasticsearch'
+  InstanceCount:
+    Description: Elasticsearch Instance Count
+    Type: String
+    Default: '1'
+  EBSIops:
+    Description: Elasticsearch EBS iops
+    Type: Number
+    Default: 0
+  EBSVolumeSize:
+    Description: Elasticsearch EBS volume size (GB)
+    Type: Number
+    Default: 20
+  EBSVolumeType:
+    Description: Elasticsearch EBS volume type
+    Type: String
+    Default: "gp2"
+  ESSubnetIds:
+    Description: Elasticsearch Subnets
+    Type: AWS::EC2::Subnet::Id
+  ESSecurityGroupIds:
+    Description: Elasticsearch SecurityGroups
+    Type: AWS::EC2::SecurityGroup::Id
+Resources:
+  ElasticSearchDomain:
+    Type: 'AWS::Elasticsearch::Domain'
+    Properties:
+      AccessPolicies:
+        Version: '2012-10-17'
+        Statement:
+          -
+            Effect: 'Allow'
+            Principal:
+              AWS: '*'
+            Action: 'es:*'
+            Resource: !Sub 'arn:aws:es:${AWS::Region}:${AWS::AccountId}:*/*'
+      AdvancedOptions: 
+        rest.action.multi.allow_explicit_index: 'true'
+      EBSOptions:
+        EBSEnabled: true
+        Iops: !Ref EBSIops
+        VolumeSize: !Ref EBSVolumeSize
+        VolumeType: !Ref EBSVolumeType
+      ElasticsearchClusterConfig: 
+        DedicatedMasterEnabled: false
+        InstanceCount: !Ref InstanceCount
+        ZoneAwarenessEnabled: false
+        InstanceType: !Ref InstanceType
+      ElasticsearchVersion: !Ref ElasticsearchVersion
+      LogPublishingOptions: 
+        ES_APPLICATION_LOGS:
+            Enabled: false
+            #CloudWatchLogsLogGroupArn: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/aes/domains/es-application-logs'
+        SEARCH_SLOW_LOGS:
+            Enabled: false
+            #CloudWatchLogsLogGroupArn: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/aes/domains/es-slow-logs'
+        INDEX_SLOW_LOGS:
+            Enabled: false
+            #CloudWatchLogsLogGroupArn: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/aes/domains/es-index-slow-logs'
+      VPCOptions: 
+        SubnetIds:
+          - !Ref ESSubnetIds
+        SecurityGroupIds:
+          - !Ref ESSecurityGroupIds
+      Tags: 
+      - Key: Name
+        Value: !Sub ElasticSearch-${AWS::StackName}
+
+Outputs:
+  ElasticsearchEndpoint:
+    Description: ElasticSearch domain endpoint
+    Value: !GetAtt ElasticSearchDomain.DomainEndpoint
+...

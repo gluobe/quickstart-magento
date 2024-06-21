@@ -1,0 +1,385 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Magento 2.* Web Server Template (qs-1qup6racr)
+Parameters:
+  DBMasterUserPassword:
+    AllowedPattern: (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+    Description: RDS MySQL Database Password
+    NoEcho: 'True'
+    Type: String
+  DBMasterUsername:
+    Default: admin
+    Description: RDS MySQL Database Username
+    Type: String
+  DBName:
+    Default: ''
+    Description: RDS MySQL Database Name
+    Type: String
+  DNSName:
+    Default: ''
+    Description: DNS Name for the magento site, you should create an alias for the
+      ELB after the stack creation
+    Type: String
+  EFSSecurityGroup:
+    Description: EFS Security Group
+    Type: AWS::EC2::SecurityGroup::Id
+  ELBSecurityGroup:
+    Description: ELB Security Group
+    Type: AWS::EC2::SecurityGroup::Id
+  ElastiCacheEndpoint:
+    Default: ''
+    Description: ElastiCache Endpoint
+    Type: String
+  ElasticLoadBalancerSubnets:
+    ConstraintDescription: Must be list of existing Public subnet IDs
+    Default: ''
+    Description: A list of public subnet identifiers of Amazon VPCs where the Elastic
+      Load Balancer would be launched.
+    Type: List<AWS::EC2::Subnet::Id>
+  KeyPair:
+    ConstraintDescription: Must be the name of an existing EC2 KeyPair.
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Type: AWS::EC2::KeyPair::KeyName
+  MySQLEndPointAddress:
+    Default: ''
+    Description: RDS MySQL Endpoint
+    Type: String
+  NotificationEmail:
+    AllowedPattern: ([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)
+    ConstraintDescription: Must be a valid email address.
+    Description: Email address to notify if there are any scaling operations
+    Type: String
+  QSS3BucketName:
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    ConstraintDescription: Quick Start bucket name can include numbers, lowercase
+      letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
+      (-).
+    Default: aws-quickstart
+    Description: S3 bucket name for the Quick Start assets. Quick Start bucket name
+      can include numbers, lowercase letters, uppercase letters, and hyphens (-).
+      It cannot start or end with a hyphen (-).
+    Type: String
+  QSS3BucketRegion:
+    Default: 'us-east-1'
+    Description: 'The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.'
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: ^[0-9a-zA-Z-/]*$
+    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
+      uppercase letters, hyphens (-), and forward slash (/).
+    Default: quickstart-magento/
+    Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
+      can include numbers, lowercase letters, uppercase letters, hyphens (-), and
+      forward slash (/).
+    Type: String
+  SSLCertificateId:
+    Default: 'none'
+    Description: The ARN of the SSL certificate to use for the webserver. [optional]
+    Type: String
+  VPCID:
+    Description: VPC ID
+    Type: AWS::EC2::VPC::Id
+  WebServerDesiredCapacity:
+    Default: '1'
+    Description: Desired No of web server instances
+    Type: Number
+  WebServerInstanceType:
+    AllowedValues:
+    - t2.micro
+    - t2.small
+    - t2.medium
+    - t2.large
+    - m4.large
+    - m4.xlarge
+    - m4.2xlarge
+    - m4.4xlarge
+    - m4.10xlarge
+    - m3.medium
+    - m3.large
+    - m3.xlarge
+    - m3.2xlarge
+    - c4.large
+    - c4.xlarge
+    - c4.2xlarge
+    - c4.4xlarge
+    - c4.8xlarge
+    - c3.large
+    - c3.xlarge
+    - c3.2xlarge
+    - c3.4xlarge
+    - c3.8xlarge
+    - r3.large
+    - r3.xlarge
+    - r3.2xlarge
+    - r3.4xlarge
+    - r3.8xlarge
+    - i2.xlarge
+    - i2.2xlarge
+    - i2.4xlarge
+    - i2.8xlarge
+    ConstraintDescription: Choose an instance type.
+    Default: m4.large
+    Description: Web Server node instance type
+    Type: String
+  WebServerMaxSize:
+    Default: '1'
+    Description: Maximum No of web server instances
+    Type: Number
+  WebServerMinSize:
+    Default: '1'
+    Description: Minimum No of web server instances
+    Type: Number
+  WebServerSecurityGroup:
+    Description: Web Server Security Group
+    Type: AWS::EC2::SecurityGroup::Id
+  WebServerSubnets:
+    ConstraintDescription: must be list of existing subnet Ids
+    Default: ''
+    Description: A list of subnet identifiers of Amazon VPCs where the WebServer Autoscaling
+      would be launched.
+    Type: List<AWS::EC2::Subnet::Id>
+  WebServerRootEbsSize:
+    Default: '20'
+    Description: Size of the root EBS volume (in GB)
+    Type: Number
+  WebServerRootEbsType:
+    AllowedValues:
+    - gp2
+    - gp3
+    Default: 'gp2'
+    Description: Type of the root EBS volume
+    Type: String
+  WebServerAmi:
+    Description: AMI ID of the image built by Packer
+    Type: String
+Conditions:
+  UseSSL:
+    !Not
+    - !Equals
+      - !Ref SSLCertificateId
+      - ''
+  UseELBName:
+    !Equals
+    - !Ref DNSName
+    - ''
+  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
+Resources:
+  FileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      PerformanceMode: generalPurpose
+      Encrypted: true
+      FileSystemTags:
+      - Key: Name
+        Value: EFS AWS Quick Start
+  MountTarget1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystem
+      SubnetId:
+        !Select
+        - '0'
+        - !Ref WebServerSubnets
+      SecurityGroups:
+      - !Ref EFSSecurityGroup
+  MountTarget2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystem
+      SubnetId:
+        !Select
+        - '1'
+        - !Ref WebServerSubnets
+      SecurityGroups:
+      - !Ref EFSSecurityGroup
+  MagentoMainLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ["-", ['LogGroup-Web', !Select [0, !Split ["-", !Sub "${AWS::StackName}"]]]]
+      RetentionInDays: 180
+  WebInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:DescribeLogStreams
+            Resource: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${MagentoMainLogGroup}:*
+          - Effect: Allow
+            Action:
+            - ec2:DescribeInstances
+            - s3:GetObject
+            Resource: '*'
+        PolicyName: Instance-Limited-Role
+  WebInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+      - !Ref WebInstanceRole
+  NotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+      - Endpoint: !Ref NotificationEmail
+        Protocol: email
+  WebServerASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      LaunchConfigurationName: !Ref WebServerLC
+      MinSize: !Ref WebServerMinSize
+      MaxSize: !Ref WebServerMaxSize
+      DesiredCapacity: !Ref WebServerDesiredCapacity
+      TargetGroupARNs:
+      - !Ref ALBTargetGroup
+      VPCZoneIdentifier: !Ref WebServerSubnets
+      NotificationConfigurations:
+      - TopicARN: !Ref NotificationTopic
+        NotificationTypes:
+        - autoscaling:EC2_INSTANCE_LAUNCH
+        - autoscaling:EC2_INSTANCE_LAUNCH_ERROR
+        - autoscaling:EC2_INSTANCE_TERMINATE
+        - autoscaling:EC2_INSTANCE_TERMINATE_ERROR
+      Tags:
+      - Key: Name
+        Value: !Sub ${AWS::StackName}-Web Server
+        PropagateAtLaunch: true
+  WebServerLC:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref WebServerAmi
+      InstanceType: !Ref WebServerInstanceType
+      SecurityGroups:
+      - !Ref WebServerSecurityGroup
+      IamInstanceProfile: !Ref WebInstanceProfile
+      KeyName: !Ref KeyPair
+      BlockDeviceMappings: 
+        - DeviceName: /dev/xvda
+          Ebs: 
+            VolumeSize: !Ref WebServerRootEbsSize 
+            VolumeType: !Ref WebServerRootEbsType 
+      UserData:
+        !Base64
+          Fn::Sub: |
+            #cloud-config
+            runcmd:
+            - echo "${FileSystem}.efs.${AWS::Region}.amazonaws.com:/    /mnt/efs   nfs4    nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport" >> /etc/fstab
+            - mount -a
+            - sudo -u ec2-user bash -c "/tmp/configure_web.sh"
+  WebServerTargetTrackingScalingPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref WebServerASG
+      Cooldown: '60'
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageCPUUtilization
+        TargetValue: 80.0
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      Scheme: internet-facing
+      Subnets: !Ref ElasticLoadBalancerSubnets
+      SecurityGroups:
+      - !Ref ELBSecurityGroup
+      Tags:
+      - Key: Name
+        Value: MagentoWebserverALB
+  ALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /health_check.php
+      HealthCheckPort: '80'
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 5
+      VpcId:
+        Ref: VPCID
+      TargetGroupAttributes:
+      - Key: stickiness.enabled
+        Value: 'true'
+      - Key: stickiness.type
+        Value: lb_cookie
+      - Key: stickiness.lb_cookie.duration_seconds
+        Value: '30'
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      Certificates:
+      - !If
+        - UseSSL
+        - CertificateArn: !Ref SSLCertificateId
+        - !Ref AWS::NoValue
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref ALBTargetGroup
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port:
+        !If
+        - UseSSL
+        - 443
+        - 80
+      Protocol:
+        !If
+        - UseSSL
+        - HTTPS
+        - HTTP
+  ALBListener2:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - RedirectConfig:
+          Host: '#{host}'
+          Path: '/#{path}'
+          Port: 443
+          Protocol: HTTPS
+          Query: '#{query}'
+          StatusCode: HTTP_301
+        Type: redirect
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+Outputs:
+  FileSystemId:
+    Description: The ID of the EFS filesystem
+    Value: !Ref FileSystem
+  URL:
+    Description: The URL of the website
+    Value:
+      !Sub
+      - ${Param1}://${Param2}
+      - Param2:
+          !If
+          - UseELBName
+          - !GetAtt ApplicationLoadBalancer.DNSName
+          - !Ref DNSName
+        Param1:
+          !If
+          - UseSSL
+          - https
+          - http
+  ELBURL:
+    Description: The URL of the ELB, you should create a CNAME or alias to this name
+      if you specified a DNS name
+    Value: !GetAtt ApplicationLoadBalancer.DNSName
+...

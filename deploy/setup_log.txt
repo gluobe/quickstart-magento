@@ -1,0 +1,11 @@
+### STG
+aws iam create-service-linked-role --aws-service-name es.amazonaws.com --profile imb-STG
+aws s3api create-bucket --bucket stg-magento-quickstart-895248839606 --region us-east-2 --create-bucket-configuration LocationConstraint=us-east-2 --profile imb-STG
+aws s3 cp ../cloudformation s3://stg-magento-quickstart-895248839606/cloudformation/ --recursive --profile imb-STG
+aws s3 cp ../parameters/parameters-imb-STG.json s3://stg-magento-quickstart-895248839606/cloudformation/parameters-imb-STG.json --profile imb-STG
+aws ec2 create-key-pair --key-name STG-magento-quickstart --query KeyMaterial --output text --region us-east-2 --profile imb-STG > STG-magento-quickstart.pem
+aws s3 cp STG-magento-quickstart.pem s3://stg-magento-quickstart-895248839606/devops/STG-magento-quickstart.pem --profile imb-STG
+rm -f STG-magento-quickstart.pem
+aws acm request-certificate --domain-name *.staging.imbtest.com --validation-method DNS --profile imb-STG
+#NOTE: validate certificate through AWS Console (by creating the required DNS entry) 
+# Create jenkins-phpro IAM user (currently Admin role)

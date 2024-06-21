@@ -1,0 +1,244 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Magento 2.* Cron Server Template (Gluo)
+Parameters:
+  DBMasterUserPassword:
+    AllowedPattern: (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+    Description: RDS MySQL Database Password
+    NoEcho: 'True'
+    Type: String
+  DBMasterUsername:
+    Default: admin
+    Description: RDS MySQL Database Username
+    Type: String
+  DBName:
+    Default: ''
+    Description: RDS MySQL Database Name
+    Type: String
+  DNSName:
+    Default: ''
+    Description: DNS Name for the magento site, you should create an alias for the
+      ELB after the stack creation
+    Type: String
+  EFSSecurityGroup:
+    Description: EFS Security Group
+    Type: AWS::EC2::SecurityGroup::Id
+  ElastiCacheEndpoint:
+    Default: ''
+    Description: ElastiCache Endpoint
+    Type: String
+  KeyPair:
+    ConstraintDescription: Must be the name of an existing EC2 KeyPair.
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Type: AWS::EC2::KeyPair::KeyName
+  MySQLEndPointAddress:
+    Default: ''
+    Description: RDS MySQL Endpoint
+    Type: String
+  NotificationEmail:
+    AllowedPattern: ([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)
+    ConstraintDescription: Must be a valid email address.
+    Description: Email address to notify if there are any scaling operations
+    Type: String
+  QSS3BucketName:
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    ConstraintDescription: Quick Start bucket name can include numbers, lowercase
+      letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
+      (-).
+    Default: aws-quickstart
+    Description: S3 bucket name for the Quick Start assets. Quick Start bucket name
+      can include numbers, lowercase letters, uppercase letters, and hyphens (-).
+      It cannot start or end with a hyphen (-).
+    Type: String
+  QSS3BucketRegion:
+    Default: 'us-east-1'
+    Description: 'The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.'
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: ^[0-9a-zA-Z-/]*$
+    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
+      uppercase letters, hyphens (-), and forward slash (/).
+    Default: quickstart-magento/
+    Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
+      can include numbers, lowercase letters, uppercase letters, hyphens (-), and
+      forward slash (/).
+    Type: String
+  VPCID:
+    Description: VPC ID
+    Type: AWS::EC2::VPC::Id
+  CronServerDesiredCapacity:
+    Default: '1'
+    Description: Desired No of cron server instances
+    Type: Number
+  CronServerInstanceType:
+    AllowedValues:
+    - t2.micro
+    - t2.small
+    - t2.medium
+    - t2.large
+    - m4.large
+    - m4.xlarge
+    - m4.2xlarge
+    - m4.4xlarge
+    - m4.10xlarge
+    - m3.medium
+    - m3.large
+    - m3.xlarge
+    - m3.2xlarge
+    - c4.large
+    - c4.xlarge
+    - c4.2xlarge
+    - c4.4xlarge
+    - c4.8xlarge
+    - c3.large
+    - c3.xlarge
+    - c3.2xlarge
+    - c3.4xlarge
+    - c3.8xlarge
+    - r3.large
+    - r3.xlarge
+    - r3.2xlarge
+    - r3.4xlarge
+    - r3.8xlarge
+    - i2.xlarge
+    - i2.2xlarge
+    - i2.4xlarge
+    - i2.8xlarge
+    ConstraintDescription: Choose an instance type.
+    Default: m4.large
+    Description: Cron Server node instance type
+    Type: String
+  CronServerMaxSize:
+    Default: '1'
+    Description: Maximum No of cron server instances
+    Type: Number
+  CronServerMinSize:
+    Default: '1'
+    Description: Minimum No of cron server instances
+    Type: Number
+  CronServerSecurityGroup:
+    Description: Cron Server Security Group
+    Type: AWS::EC2::SecurityGroup::Id
+  CronServerSubnets:
+    ConstraintDescription: must be list of existing subnet Ids
+    Default: ''
+    Description: A list of subnet identifiers of Amazon VPCs where the CronServer Autoscaling
+      would be launched.
+    Type: List<AWS::EC2::Subnet::Id>
+  CronServerRootEbsSize:
+    Default: '20'
+    Description: Size of the root EBS volume (in GB)
+    Type: Number
+  CronServerRootEbsType:
+    AllowedValues:
+    - gp2
+    - gp3
+    Default: 'gp2'
+    Description: Type of the root EBS volume
+    Type: String
+  CronServerAmi:
+    Description: AMI ID of the image built by Packer
+    Type: String
+  FileSystemId:
+    Description: The EFS id
+    Type: String
+Conditions:
+  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
+Resources:
+  MagentoMainLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ["-", ['LogGroup-Cron', !Select [0, !Split ["-", !Sub "${AWS::StackName}"]]]]
+      RetentionInDays: 180
+  CronInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:DescribeLogStreams
+            Resource: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${MagentoMainLogGroup}:*
+          - Effect: Allow
+            Action:
+            - ec2:DescribeInstances
+            - s3:GetObject
+            Resource: '*'
+        PolicyName: Web-Instance-Limited-Role
+  CronInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+      - !Ref CronInstanceRole
+  NotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+      - Endpoint: !Ref NotificationEmail
+        Protocol: email
+  CronServerASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      LaunchConfigurationName: !Ref CronServerLC
+      MinSize: !Ref CronServerMinSize
+      MaxSize: !Ref CronServerMaxSize
+      DesiredCapacity: !Ref CronServerDesiredCapacity
+      VPCZoneIdentifier: !Ref CronServerSubnets
+      NotificationConfigurations:
+      - TopicARN: !Ref NotificationTopic
+        NotificationTypes:
+        - autoscaling:EC2_INSTANCE_LAUNCH
+        - autoscaling:EC2_INSTANCE_LAUNCH_ERROR
+        - autoscaling:EC2_INSTANCE_TERMINATE
+        - autoscaling:EC2_INSTANCE_TERMINATE_ERROR
+      Tags:
+      - Key: Name
+        Value: !Sub ${AWS::StackName}-Cron Server
+        PropagateAtLaunch: true
+  CronServerLC:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref CronServerAmi
+      InstanceType: !Ref CronServerInstanceType
+      SecurityGroups:
+      - !Ref CronServerSecurityGroup
+      IamInstanceProfile: !Ref CronInstanceProfile
+      KeyName: !Ref KeyPair
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: !Ref CronServerRootEbsSize
+            VolumeType: !Ref CronServerRootEbsType
+      UserData:
+        !Base64
+          Fn::Sub: |
+            #cloud-config
+            runcmd:
+            - echo "${FileSystemId}.efs.${AWS::Region}.amazonaws.com:/    /mnt/efs   nfs4    nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport" >> /etc/fstab
+            - mount -a
+            - sudo -u ec2-user bash -c "/tmp/configure_cron.sh"
+  CronServerTargetTrackingScalingPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref CronServerASG
+      Cooldown: '60'
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageCPUUtilization
+        TargetValue: 80.0
+...
